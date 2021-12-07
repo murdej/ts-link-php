@@ -1,0 +1,7 @@
+{
+    "name": "murdej/ts-link-php",
+    "description": "A simple transparent link for calling php methods from typescript.",
+    "require": {
+        "php": ">=8.0"
+    }
+}
