@@ -31,6 +31,8 @@ class TsLink
 			}
 			$pars = $srcStruct["pars"];
 			$res->response = $this->service->$methodName(...$pars);
+            if ($this->service instanceof IContextUpdate)
+                $res->context = $this->service->getContextUpdates();
 		} catch (\Exception $exception) {
 			if ($this->sendException) throw $exception;
 			$res->exception = $exception;

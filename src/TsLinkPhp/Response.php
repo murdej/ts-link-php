@@ -11,6 +11,8 @@ class Response implements JsonSerializable
 
 	public mixed $response = null;
 
+    public ?array $context = null;
+
 	/**
 	 * @return mixed
 	 */
@@ -19,7 +21,7 @@ class Response implements JsonSerializable
 		$res = [ "status" => $this->exception ? "exception" : "ok" ];
 		if ($this->exception) $res["exception"] = $this->exception->__toString();
 		else $res["response"] = $this->response;
-
+        if ($this->context) $res["context"] = $this->context;
 		return $res;
 	}
 

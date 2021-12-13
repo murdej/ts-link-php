@@ -11,6 +11,8 @@ class TsCodeGenerator
 
 	public string $baseClassName = "BaseCL";
 
+    public string $baseImportPath = "../";
+
 	public ?string $className = null;
 
 	public ClassReflection $classReflection;
@@ -25,8 +27,12 @@ class TsCodeGenerator
 		$ln("// GENERATED FILE, DO NOT EDIT");
 		if ($this->baseClassRequire)
 			$ln("import { $this->baseClassName } from \"$this->baseClassRequire\";");
+        foreach ($this->classReflection->imports as $file => $classes) {
+            $ln("import { " . implode(', ', $classes) . " } from \"" . $this->baseImportPath . $file . "\";");
+        }
 		$ln("export class $this->className extends $this->baseClassName {");
 		foreach ($this->classReflection->methods as $method) {
+            $method->prepare();
 			$m = "\tpublic $method->name(";
 			$f = true;
 			foreach ($method->params as $param)
@@ -36,7 +42,10 @@ class TsCodeGenerator
 				$m .= $param->name.": ".$this->phpTypeTpTS($param->dataType, $param->nullable);
 			}
 			$resType = $this->phpTypeTpTS($method->returnDataType, null);
-			$m .= ") : Promise<" . $resType . "> { return this.callMethod(\"$method->name\", arguments, " . json_encode($method->getCallOpts()) . "); }";
+			$m .= ") : Promise<" . $resType . "> { return this.callMethod(\"$method->name\", arguments, "
+                . json_encode($method->getCallOpts())
+                . ($method->newResult ? ', ' . $method->returnDataType : '')
+                . "); }";
 			$ln($m);
 		}
 		$ln("}");

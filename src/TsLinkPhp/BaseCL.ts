@@ -13,7 +13,7 @@ export class BaseCL {
 
 	public useMethod: UseLibrary|null = null;
 
-	protected callMethod(methodName : string, args : any/* : IArguments*/, callOpts : CallOpts = { rawResult: false }) : Promise<any> {
+	protected callMethod(methodName : string, args : any/* : IArguments*/, callOpts : CallOpts = { rawResult: false }, newDataType = null) : Promise<any> {
 		const ajax = new Ajax(this.url);
 		// if (this.ajaxXMLHttpRequestClass) ajax.XMLHttpRequestClass  = this.ajaxXMLHttpRequestClass;
 		// ajax.requestContentType = "application/json";
@@ -40,6 +40,7 @@ export class BaseCL {
 						if (response.status == "ok")
 						{
 							if (this.onLoaded) this.onLoaded(loadingHandle, response);
+							if (newDataType) response.response = new newDataType(response.response);
 							resolve(response.response);
 						}
 						else

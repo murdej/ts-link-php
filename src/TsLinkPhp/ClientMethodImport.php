@@ -6,8 +6,8 @@ namespace Murdej\TsLinkPhp;
 #[\Attribute]
 class ClientMethodImport
 {
-	private string $from;
-	private array $types;
+	public string $from;
+	public array $types;
 
 	public function __construct(string $from, array $types)
 	{
