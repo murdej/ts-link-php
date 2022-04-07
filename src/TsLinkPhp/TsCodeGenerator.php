@@ -28,7 +28,7 @@ class TsCodeGenerator
 		if ($this->baseClassRequire)
 			$ln("import { $this->baseClassName } from \"$this->baseClassRequire\";");
         foreach ($this->classReflection->imports as $file => $classes) {
-            $ln("import { " . implode(', ', $classes) . " } from \"" . $this->baseImportPath . $file . "\";");
+            $ln("import { " . implode(', ', array_unique($classes)) . " } from \"" . $this->baseImportPath . $file . "\";");
         }
 		$ln("export class $this->className extends $this->baseClassName {");
 		foreach ($this->classReflection->methods as $method) {
