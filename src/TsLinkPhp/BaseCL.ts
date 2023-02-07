@@ -1,4 +1,3 @@
-import {Ajax, UseLibrary} from "./Ajax";
 
 export class BaseCL {
 	public context : any = {};
@@ -11,7 +10,7 @@ export class BaseCL {
 
 	public onError : ((handle : any, error : any)=>void)|null = null;
 
-	public useMethod: UseLibrary|null = null;
+	// public useMethod: UseLibrary|null = null;
 
 	protected callMethod(methodName : string, args : any/* : IArguments*/, callOpts : CallOpts = { rawResult: false }, newDataType = null) : Promise<any> {
 		const ajax = new Ajax(this.url);

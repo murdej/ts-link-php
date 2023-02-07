@@ -4,6 +4,7 @@ namespace Murdej\TsLinkPhp;
 
 use Exception;
 use JsonSerializable;
+use Nette\Utils\Json;
 
 class Response implements JsonSerializable
 {
@@ -45,6 +46,7 @@ class Response implements JsonSerializable
 	public function getTextContent() : ?string
 	{
 		return json_encode($this);
+        // return Json::encode($this);
 	}
 
 	public function __toString() : string

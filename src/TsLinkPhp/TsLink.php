@@ -15,6 +15,8 @@ class TsLink
 		$this->service = $service;
 	}
 
+    public \Closure|null $onError = null;
+
 	public function processRequest(string $src) : Response
 	{
 		$res = new Response();
@@ -33,7 +35,8 @@ class TsLink
 			$res->response = $this->service->$methodName(...$pars);
             if ($this->service instanceof IContextUpdate)
                 $res->context = $this->service->getContextUpdates();
-		} catch (\Exception $exception) {
+		} catch (\Throwable $exception) {
+            if ($this->onError) ($this->onError)($src, $exception);
 			if ($this->sendException) throw $exception;
 			$res->exception = $exception;
 		}
