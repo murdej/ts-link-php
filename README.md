@@ -19,3 +19,11 @@ const cl = new MyClassCL();
 const value = await cl.sayHello("typescript");
 ```
 
+## How to use?
+
+Install `murdej/ts-link-php` package with composer.
+
+```bash
+composer require murdej/ts-link-php
+```
+
