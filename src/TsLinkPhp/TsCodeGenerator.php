@@ -99,18 +99,24 @@ class TsCodeGenerator
         $isTs = $this->format == "ts";
 
         if (!$this->baseClassRequire) {
-            $ln(file_get_contents(__DIR__ . '/BaseCL.'.($isTs ? 'ts' : 'js')));
+            $bsrc = file_get_contents(__DIR__ . '/BaseCL.'.($isTs ? 'ts' : 'js'));
+            if (!$this->useExport) {
+                $bsrc = str_replace('export class BaseCL', 'class BaseCL', $bsrc);
+            }
+            $ln($bsrc);
         }
 
         foreach ($sources as $source)
         {
-            $ln("export class $source->className extends $this->baseClassName {");
+            $ln(($this->useExport ? "export " : "")."class $source->className extends $this->baseClassName {");
             if ($source->endpoint) {
-                $ln("\t" . 'constructor(url:string="' . $source->endpoint . '") { super(url); }');
+                $ln("\t" . 'constructor(url'
+                    . ($isTs ? ":string" : '')
+                    . '="' . $source->endpoint . '") { super(url); }');
             }
             foreach ($source->classReflection->methods as $method) {
                 $method->prepare();
-                $m = "\tpublic $method->name(";
+                $m = "\t" . ($isTs ? "public " : '') . "$method->name(";
                 $f = true;
                 foreach ($method->params as $param) {
                     if ($f) $f = false;
@@ -118,7 +124,7 @@ class TsCodeGenerator
                     $m .= $param->name . ($isTs ? ": " . $this->phpTypeTpTS($param->dataType, $param->nullable) : "");
                 }
                 $resType = $this->phpTypeTpTS($method->returnDataType, null);
-                $m .= ") : " . ($isTs ? "Promise<" . $resType . ">" : "") . " { return this.callMethod(\"$method->name\", arguments, "
+                $m .= ") " . ($isTs ? ": Promise<" . $resType . ">" : "") . " { return this.callMethod(\"$method->name\", arguments, "
                     . json_encode($method->getCallOpts())
                     . ($method->newResult ? ', ' . $method->returnDataType : '')
                     . "); }";
