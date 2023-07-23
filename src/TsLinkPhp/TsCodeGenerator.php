@@ -45,9 +45,9 @@ class TsCodeGenerator
      */
 
     /**
-     * @var bool Export generated classes
+     * @var bool Use JS modules, add export to generated classes
      */
-    public bool $useExport = true;
+    public bool $useJsModules = true;
 
     /**
      * @var string Export format js/ts
@@ -100,7 +100,7 @@ class TsCodeGenerator
 
         if (!$this->baseClassRequire) {
             $bsrc = file_get_contents(__DIR__ . '/BaseCL.'.($isTs ? 'ts' : 'js'));
-            if (!$this->useExport) {
+            if (!$this->useJsModules) {
                 $bsrc = str_replace('export class BaseCL', 'class BaseCL', $bsrc);
             }
             $ln($bsrc);
@@ -108,7 +108,7 @@ class TsCodeGenerator
 
         foreach ($sources as $source)
         {
-            $ln(($this->useExport ? "export " : "")."class $source->className extends $this->baseClassName {");
+            $ln(($this->useJsModules ? "export " : "")."class $source->className extends $this->baseClassName {");
             if ($source->endpoint) {
                 $ln("\t" . 'constructor(url'
                     . ($isTs ? ":string" : '')

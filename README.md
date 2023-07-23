@@ -4,10 +4,10 @@ What this thing can do. It simply connects PHP and typescript. Just write a clas
 
 ```php
 class MyClassCL {
-    [CLMethod()]
+    #[ClientMethod()]
     public function sayHello(string $name) : string
     {
-        return "Hello $name from PHP";
+        return "Hello $name from PHP " . date('Y-m-d H:i:s') . ".";
     }
 }
 ```
@@ -27,3 +27,48 @@ Install `murdej/ts-link-php` package with composer.
 composer require murdej/ts-link-php
 ```
 
+Create endpoint:
+
+```php
+// Create instance of your service
+$service = new MyClassCL();
+// Create an instance of TsLink and pass your service to the constructor.
+$tl = new TsLink($service);
+// Get raw post content
+$rawPost = file_get_contents('php://input');
+// Call processRequest and pass contents, 
+$response = $tl->processRequest($rawPost);
+// Result sent as json
+header('Content-type: ' . $response->getContentType());
+echo $response;
+```
+
+Generate js or ts code
+
+```php
+$tsg = new TsCodeGenerator();
+// Add a PHP class, optionally also the endpoint address. This step can be repeated.
+$tsg->add(MyClassCL::class, './endpoint.php');
+// Export format, can be ts or js. Default is ts
+$tsg->format = "js";
+// Enable or disable js modules (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+$tsg->useExport = false;
+// Create and save ts/js sources
+$source = $tsg->generateCode();
+file_put_contents('./tslClasses.js', $source);
+```
+The generation of js/ts must be started after creating or modifying the header of the method to be accessed from js/ts.
+
+Then you can call PHP methods from js/ts.
+
+```html
+<h1 id="message"></h1>
+<script src="tslClasses.js"></script>
+<script>
+    const myClass = new MyClassCL();
+    (async () => {
+        const res = await myClass.sayHello("TypeScript");
+        document.getElementById("message").innerText = res;
+    })();
+</script>
+```
