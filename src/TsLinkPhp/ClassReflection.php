@@ -15,9 +15,12 @@ class ClassReflection
     /** @var string[][] */
     public array $imports = [];
 
+    public string $classShortName;
+
     public function parseClass(string $className)
 	{
 		$refl = new ReflectionClass($className);
+        $this->classShortName = $refl->getShortName();
 		foreach ($refl->getMethods() as $method) {
 			$cms = $method->getAttributes(ClientMethod::class);
 			if (!$cms) continue;
@@ -82,6 +85,11 @@ class ClassReflection
                 $this->imports[$imp->from][] = $type;
             }
         }
+    }
+
+    public function __construct(string|null $className = null)
+    {
+        if ($className) $this->parseClass($className);
     }
 
 }
