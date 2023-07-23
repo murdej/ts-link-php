@@ -3,12 +3,9 @@
 What this thing can do. It simply connects PHP and typescript. Just write a class in PHP:
 
 ```php
-class MyClassCL {
-    #[ClientMethod()]
-    public function sayHello(string $name) : string
-    {
-        return "Hello $name from PHP " . date('Y-m-d H:i:s') . ".";
-    }
+public function sayHello(string $name) : string
+{
+    return "Hello $name from PHP " . date('Y-m-d H:i:s') . ".";
 }
 ```
 
@@ -25,6 +22,20 @@ Install `murdej/ts-link-php` package with composer.
 
 ```bash
 composer require murdej/ts-link-php
+```
+
+Create a class that will contain the methods you will use from js/ts. These methods must have the `#[ClientMethod()]` attribute from the namespace `Murdej\TsLinkPhp\`.
+
+```php
+use Murdej\TsLinkPhp\ClientMethod;
+
+class MyClassCL {
+    #[ClientMethod()]
+    public function sayHello(string $name) : string
+    {
+        return "Hello $name from PHP " . date('Y-m-d H:i:s') . ".";
+    }
+}
 ```
 
 Create endpoint:
