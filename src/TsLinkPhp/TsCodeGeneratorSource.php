@@ -6,6 +6,8 @@ class TsCodeGeneratorSource
 {
     public string $className;
 
+    public ClassReflection $classReflection;
+
     /**
      * @param ClassReflection|string $classDef
      * @param string|null $endpoint
@@ -14,8 +16,7 @@ class TsCodeGeneratorSource
         $classDef,
         public ?string $endpoint = null,
         ?string $className = null
-    )
-    {
+    ) {
         $this->classReflection = is_string($classDef)
             ? new ClassReflection($classDef)
             : $classDef;
@@ -23,6 +24,4 @@ class TsCodeGeneratorSource
             ? $this->classReflection->classShortName
             : $className;
     }
-
-    public ClassReflection $classReflection;
 }

@@ -1,18 +1,23 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Murdej\TsLinkPhp;
 
-#[\Attribute]
+use Attribute;
+
+#[Attribute]
 class ClientMethod
 {
-	public bool $rawResult = false;
+    public bool $rawResult = false;
 
-	public function __construct(bool $rawResult = false)
-	{
-		$this->rawResult = $rawResult;
-	}
+    public function __construct(bool $rawResult = false)
+    {
+        $this->rawResult = $rawResult;
+    }
 
-	public function getCallOpts() {
-		return (array)$this;
-	}
+    public function getCallOpts()
+    {
+        return (array)$this;
+    }
 }
