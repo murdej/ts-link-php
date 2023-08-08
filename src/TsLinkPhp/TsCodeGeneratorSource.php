@@ -10,19 +10,14 @@ class TsCodeGeneratorSource
 
     public ClassReflection $classReflection;
 
-    /**
-     * @param ClassReflection|string $classDef
-     */
     public function __construct(
-        $classDef,
+        ClassReflection|string $classDef,
         public ?string $endpoint = null,
         ?string $className = null
     ) {
         $this->classReflection = is_string($classDef)
             ? new ClassReflection($classDef)
             : $classDef;
-        $this->className = ($className === null)
-            ? $this->classReflection->classShortName
-            : $className;
+        $this->className = $className ?? $this->classReflection->classShortName;
     }
 }

@@ -15,20 +15,20 @@ class Response implements JsonSerializable
 
     public ?array $context = null;
 
-    /**
-     * @return mixed
-     */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         $res = ["status" => $this->exception ? "exception" : "ok"];
+
         if ($this->exception) {
-            $res["exception"] = $this->exception->__toString();
+            $res["exception"] = (string)$this->exception;
         } else {
             $res["response"] = $this->response;
         }
+
         if ($this->context) {
             $res["context"] = $this->context;
         }
+
         return $res;
     }
 
@@ -40,22 +40,22 @@ class Response implements JsonSerializable
     public function getFilePath(): ?string
     {
         $raw = $this->getRaw();
-        return ($raw && $raw->filePath) ? $raw->filePath : null;
+        return $raw->filePath ?? null;
     }
 
     public function getContentType(): string
     {
         $raw = $this->getRaw();
-        return $raw ? $raw->contentType : "application/json";
+        return $raw->contentType ?? "application/json";
     }
 
     public function getTextContent(): ?string
     {
-        return json_encode($this);
+        return json_encode($this, JSON_THROW_ON_ERROR);
     }
 
     public function __toString(): string
     {
-        return json_encode($this);
+        return $this->getTextContent();
     }
 }

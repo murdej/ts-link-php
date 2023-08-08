@@ -15,61 +15,48 @@ class TsCodeGenerator
 
     public string $baseImportPath = "../";
 
-     * @var string|null
-     * @deprecated Use add method
-     */
+    /** @deprecated Use add method */
     public ?string $url = null;
 
-    /**
-     * @var string|null
-     * @deprecated Use add method
-     */
+    /** @deprecated Use add method */
     public ?ClassReflection $classReflection = null;
 
-    /**
-     * @var TsCodeGeneratorSource[]
-     */
+    /** @var TsCodeGeneratorSource[] */
     protected array $sources = [];
 
-    /**
-     * @var bool Use JS modules, add export to generated classes
-     */
+    /** @var bool Use JS modules, add export to generated classes */
     public bool $useJsModules = true;
 
-    /**
-     * @var string Export format js/ts
-     */
+    /** @var string Export format js/ts */
     public string $format = "ts";
 
     /**
      * @param string|ClassReflection $classDef Class name or reflection
      * @param string|null $endpoint Endpoint, optional
      * @param string|null $className Name of typescript class or null for detection
-     * @return void
+     *
      * Add class to generation
      */
     public function add(string|ClassReflection $classDef, string|null $endpoint = null, ?string $className = null): void
     {
-        require_once __DIR__ . '/TsCodeGeneratorSource.php';
         $this->sources[] = new TsCodeGeneratorSource($classDef, $endpoint, $className);
     }
 
     /**
-     * @return string
-     * Generates typescript code.
      * @noinspection PsalmAdvanceCallableParamsInspection - PhpStorm bug with Closure
+     *
+     * Generates typescript code.
      */
     public function generateCode(): string
     {
-        /**
-         * @var TsCodeGeneratorSource[] $sources
-         */
+        /** @var TsCodeGeneratorSource[] $sources */
         $sources = array_merge(
             $this->classReflection ? [new ClassReflection($this->classReflection)] : [],
             $this->sources
         );
+
         $res = "";
-        $ln = function (string ...$lines) use (&$res) {
+        $ln = static function (string ...$lines) use (&$res) {
             foreach ($lines as $line) {
                 $res .= $line . "\n";
             }
@@ -89,6 +76,7 @@ class TsCodeGenerator
                 );
             }
         }
+
         foreach ($imports as $file => $classes) {
             $ln(
                 "import { "
@@ -97,7 +85,7 @@ class TsCodeGenerator
             );
         }
 
-        $isTs = $this->format == "ts";
+        $isTs = $this->format === "ts";
 
         if (!$this->baseClassRequire) {
             $bsrc = file_get_contents(__DIR__ . '/BaseCL.' . ($isTs ? 'ts' : 'js'));
@@ -132,7 +120,7 @@ class TsCodeGenerator
                 $m .= ") "
                     . ($isTs ? ": Promise<" . $resType . ">" : "")
                     . " { return this.callMethod(\"$method->name\", arguments, "
-                    . json_encode($method->getCallOpts())
+                    . json_encode($method->getCallOpts(), JSON_THROW_ON_ERROR)
                     . ($method->newResult ? ', ' . $method->returnDataType : '')
                     . "); }";
                 $ln($m);
@@ -148,6 +136,7 @@ class TsCodeGenerator
         if (!$dataType) {
             return "any";
         }
+
         if ($dataType instanceof ReflectionUnionType) {
             return implode(
                 "|",
@@ -157,6 +146,7 @@ class TsCodeGenerator
                 )
             );
         }
+
         $aliases = [
             "bool" => "boolean",
             "int" => "number",
@@ -169,24 +159,26 @@ class TsCodeGenerator
             "dict" => "Record<number|string|boolean, any>",
             "list" => "any[]",
         ];
+
         $isCustom = is_string($dataType);
         if ($dataType instanceof ReflectionNamedType) {
             $nullable = $dataType->allowsNull();
             $dataType = $dataType->getName();
         }
-        if ($dataType && $dataType[0] == "?") {
+
+        if ($dataType && $dataType[0] === "?") {
             $dataType = substr($dataType, 1);
             $nullable = true;
         }
+
         if (isset($aliases[$dataType])) {
             $dataType = $aliases[$dataType];
-        } else {
-            if (!$isCustom) {
-                $dataType = "any";
-            }
+        } elseif (!$isCustom) {
+            $dataType = "any";
         }
+
         if ($nullable) {
-            $dataType = $dataType . "|null";
+            $dataType .= "|null";
         }
 
         return $dataType;

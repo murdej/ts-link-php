@@ -16,7 +16,14 @@ class ClassReflection
 
     public string $classShortName;
 
-    public function parseClass(string $className)
+    public function __construct(?string $className = null)
+    {
+        if ($className) {
+            $this->parseClass($className);
+        }
+    }
+
+    public function parseClass(string $className): void
     {
         $refl = new ReflectionClass($className);
         $this->classShortName = $refl->getShortName();
@@ -65,7 +72,7 @@ class ClassReflection
         $this->getImportsFromAttributes($refl->getAttributes(ClientMethodImport::class));
     }
 
-    private function getImportsFromAttributes(array $attributes)
+    private function getImportsFromAttributes(array $attributes): void
     {
         foreach ($attributes as $attribute) {
             /** @var ClientMethodImport $imp */
@@ -76,13 +83,6 @@ class ClassReflection
                 }
                 $this->imports[$imp->from][] = $type;
             }
-        }
-    }
-
-    public function __construct(string|null $className = null)
-    {
-        if ($className) {
-            $this->parseClass($className);
         }
     }
 }

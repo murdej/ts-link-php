@@ -16,17 +16,17 @@ class RawData
 
     public ?string $filePath = null;
 
-    public static function filePath(string $filePath): RawData
+    public static function filePath(string $filePath): self
     {
-        $res = new RawData();
+        $res = new self();
         $res->filePath = $filePath;
 
         return $res;
     }
 
-    public static function data(mixed $data): RawData
+    public static function data(mixed $data): self
     {
-        $res = new RawData();
+        $res = new self();
         $res->data = $data;
 
         return $res;

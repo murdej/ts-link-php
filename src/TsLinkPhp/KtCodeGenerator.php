@@ -19,7 +19,7 @@ class KtCodeGenerator
     public function generateCode(): string
     {
         $res = "";
-        $ln = function (string ...$lines) use (&$res) {
+        $ln = static function (string ...$lines) use (&$res) {
             foreach ($lines as $line) {
                 $res .= $line . "\n";
             }
@@ -42,7 +42,7 @@ class KtCodeGenerator
             }
             $resType = $this->phpTypeTpTS($method->returnDataType, null);
             $m .= ") : Promise<" . $resType . "> { return this.callMethod(\"$method->name\", arguments, "
-                . json_encode($method->getCallOpts())
+                . json_encode($method->getCallOpts(), JSON_THROW_ON_ERROR)
                 . "); }";
             $ln($m);
         }
@@ -56,6 +56,7 @@ class KtCodeGenerator
         if (!$dataType) {
             return "any";
         }
+
         if ($dataType instanceof ReflectionUnionType) {
             return implode(
                 "|",
@@ -65,6 +66,7 @@ class KtCodeGenerator
                 )
             );
         }
+
         $aliases = [
             "bool" => "boolean",
             "int" => "number",
@@ -77,24 +79,26 @@ class KtCodeGenerator
             "dict" => "Record<number|string|boolean, any>",
             "list" => "any[]",
         ];
+
         $isCustom = is_string($dataType);
         if ($dataType instanceof ReflectionNamedType) {
             $nullable = $dataType->allowsNull();
             $dataType = $dataType->getName();
         }
-        if ($dataType && $dataType[0] == "?") {
+
+        if ($dataType && $dataType[0] === "?") {
             $dataType = substr($dataType, 1);
             $nullable = true;
         }
+
         if (isset($aliases[$dataType])) {
             $dataType = $aliases[$dataType];
-        } else {
-            if (!$isCustom) {
-                $dataType = "any";
-            }
+        } elseif (!$isCustom) {
+            $dataType = "any";
         }
+
         if ($nullable) {
-            $dataType = $dataType . "|null";
+            $dataType .= "|null";
         }
 
         return $dataType;

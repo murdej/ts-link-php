@@ -20,7 +20,7 @@ class ClassReflectionMethod
 
     public bool $newResult = false;
 
-    public function prepare()
+    public function prepare(): void
     {
         if (is_string($this->returnDataType) && str_starts_with($this->returnDataType, 'new ')) {
             $this->returnDataType = substr($this->returnDataType, 4);

@@ -24,7 +24,7 @@ class TsLink
     {
         $res = new Response();
         try {
-            $srcStruct = json_decode($src, true);
+            $srcStruct = json_decode($src, true, 512, JSON_THROW_ON_ERROR);
             $methodName = $srcStruct["name"];
             $context = $srcStruct["context"];
             if ($context && isset($this->service->context)) {

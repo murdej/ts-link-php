@@ -16,7 +16,7 @@ class ClientMethod
         $this->rawResult = $rawResult;
     }
 
-    public function getCallOpts()
+    public function getCallOpts(): array
     {
         return (array)$this;
     }
