@@ -9,8 +9,6 @@ use ReflectionUnionType;
 
 class KtCodeGenerator
 {
-    public string $package = "../BaseCL";
-
     public string $baseClassName = "BaseCL";
 
     public ?string $className = null;

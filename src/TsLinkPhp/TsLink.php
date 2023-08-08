@@ -9,8 +9,6 @@ use Throwable;
 
 class TsLink
 {
-    public ClassReflection $classReflection;
-
     public object $service;
 
     public bool $sendException = true;

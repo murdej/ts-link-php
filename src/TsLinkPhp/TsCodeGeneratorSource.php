@@ -12,7 +12,6 @@ class TsCodeGeneratorSource
 
     /**
      * @param ClassReflection|string $classDef
-     * @param string|null $endpoint
      */
     public function __construct(
         $classDef,

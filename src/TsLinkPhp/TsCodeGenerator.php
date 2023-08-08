@@ -15,13 +15,6 @@ class TsCodeGenerator
 
     public string $baseImportPath = "../";
 
-    /**
-     * @var string|null
-     * @deprecated Use add method
-     */
-    public ?string $className = null;
-
-    /**
      * @var string|null
      * @deprecated Use add method
      */
@@ -72,7 +65,7 @@ class TsCodeGenerator
          * @var TsCodeGeneratorSource[] $sources
          */
         $sources = array_merge(
-            $this->classReflection ? [new ClassReflection($this->classReflection, $this->url)] : [],
+            $this->classReflection ? [new ClassReflection($this->classReflection)] : [],
             $this->sources
         );
         $res = "";
