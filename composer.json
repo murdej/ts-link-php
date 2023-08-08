@@ -8,9 +8,9 @@
         "nette/utils": "^3.0 || ^4.0"
     },
     "autoload": {
-        "classmap": [
-            "src/"
-        ]
+        "psr-4": {
+            "Murdej\\TsLinkPhp\\": "src/TsLinkPhp/"
+        }
     },
     "config": {
         "sort-packages": true
