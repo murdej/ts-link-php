@@ -11,5 +11,8 @@
         "classmap": [
             "src/"
         ]
+    },
+    "config": {
+        "sort-packages": true
     }
 }
