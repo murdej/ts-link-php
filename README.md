@@ -38,7 +38,7 @@ class MyClassCL {
 }
 ```
 
-Create endpoint:
+Create endpoint (in `endpoint.php`):
 
 ```php
 // Create instance of your service
