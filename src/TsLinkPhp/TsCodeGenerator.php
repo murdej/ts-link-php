@@ -9,7 +9,7 @@ use ReflectionUnionType;
 
 class TsCodeGenerator
 {
-    public ?string $baseClassRequire = null; //"../BaseCL";
+    public ?string $baseClassRequire = null;
 
     public string $baseClassName = "BaseCL";
 

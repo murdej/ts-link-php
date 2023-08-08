@@ -63,15 +63,6 @@ class ClassReflection
         }
 
         $this->getImportsFromAttributes($refl->getAttributes(ClientMethodImport::class));
-        /* foreach ($refl->getAttributes(ClientMethodImport::class) as $attribute) {
-            /** @var ClientMethodImport $imp * /
-            $imp = $attribute->newInstance();
-            foreach ($imp->types as $type) {
-                if (!isset($this->imports[$imp->from])) $this->imports[$imp->from] = [];
-                $this->imports[$imp->from][] = $type;
-            }
-        } */
-        // dump($this->methods);
     }
 
     private function getImportsFromAttributes(array $attributes)
