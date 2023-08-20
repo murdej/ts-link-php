@@ -4,5 +4,5 @@ namespace Murdej\TsLinkPhp;
 
 interface IContextUpdate
 {
-    function getContextUpdates();
+    public function getContextUpdates();
 }

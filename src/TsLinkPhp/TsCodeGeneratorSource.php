@@ -1,28 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Murdej\TsLinkPhp;
 
 class TsCodeGeneratorSource
 {
     public string $className;
 
-    /**
-     * @param ClassReflection|string $classDef
-     * @param string|null $endpoint
-     */
+    public ClassReflection $classReflection;
+
     public function __construct(
-        $classDef,
+        ClassReflection|string $classDef,
         public ?string $endpoint = null,
         ?string $className = null
-    )
-    {
+    ) {
         $this->classReflection = is_string($classDef)
             ? new ClassReflection($classDef)
             : $classDef;
-        $this->className = ($className === null)
-            ? $this->classReflection->classShortName
-            : $className;
+        $this->className = $className ?? $this->classReflection->classShortName;
     }
-
-    public ClassReflection $classReflection;
 }

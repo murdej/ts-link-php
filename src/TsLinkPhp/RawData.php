@@ -1,33 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Murdej\TsLinkPhp;
 
 use Nette\SmartObject;
 
 class RawData
 {
-	use SmartObject;
+    use SmartObject;
 
-	public string $contentType = "application/octet-stream";
+    public string $contentType = "application/octet-stream";
 
-	public mixed $data = null;
+    public mixed $data = null;
 
-	public ?string $filePath = null;
+    public ?string $filePath = null;
 
-	public static function filePath(string $filePath) : RawData
-	{
-		$res = new RawData();
-		$res->filePath = $filePath;
+    public static function filePath(string $filePath): self
+    {
+        $res = new self();
+        $res->filePath = $filePath;
 
-		return $res;
-	}
+        return $res;
+    }
 
-	public static function data(mixed $data) : RawData
-	{
-		$res = new RawData();
-		$res->data = $data;
+    public static function data(mixed $data): self
+    {
+        $res = new self();
+        $res->data = $data;
 
-		return $res;
-	}
-
+        return $res;
+    }
 }
