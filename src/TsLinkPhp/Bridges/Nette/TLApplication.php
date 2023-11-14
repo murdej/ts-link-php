@@ -10,7 +10,7 @@ use Nette\Http\IRequest;
 use Nette\Http\IResponse;
 use Nette\Utils\Strings;
 
-class CLApplication
+class TLApplication
 {
 
     protected array $cNameToName = [];
@@ -31,7 +31,7 @@ class CLApplication
             }
             (new TextResponse(json_encode($res)))->send($this->httpRequest, $this->httpResponse);
         } else {
-            if (!isset($this->cls[$name])) throw new BadRequestException("No ClientLink with name '$name'", 404);
+            if (!isset($this->cls[$name])) throw new BadRequestException("No TsLink with name '$name'", 404);
             $cl = $this->cls[$name];
             if (method_exists($cl, 'startup')) $cl->startup();
 
