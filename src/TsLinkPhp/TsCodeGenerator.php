@@ -115,6 +115,7 @@ class TsCodeGenerator
                         $m .= ", ";
                     }
                     $m .= $param->name . ($isTs ? ": " . $this->phpTypeTpTS($param->dataType, $param->nullable) : "");
+                    if ($param->useDefaultValue) $m .= " = " . json_encode($param->defaultValue);
                 }
                 $resType = $this->phpTypeTpTS($method->returnDataType, null);
                 $m .= ") "

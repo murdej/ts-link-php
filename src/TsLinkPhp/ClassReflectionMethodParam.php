@@ -14,4 +14,8 @@ class ClassReflectionMethodParam
     public bool $nullable;
 
     public ReflectionNamedType|ReflectionUnionType|null|string $dataType;
+
+    public bool $useDefaultValue = false;
+
+    public mixed $defaultValue;
 }

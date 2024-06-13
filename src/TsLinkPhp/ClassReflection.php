@@ -41,6 +41,12 @@ class ClassReflection
                 $crmp->name = $parameter->name;
                 $crmp->nullable = $parameter->allowsNull();
                 $cmps = $parameter->getAttributes(ClientMethodType::class);
+                if ($parameter->isDefaultValueAvailable()) {
+                    $crmp->defaultValue = $parameter->getDefaultValue();
+                    $crmp->useDefaultValue = true;
+                }
+                // if ($parameter->isDefaultValueConstant()) dump($parameter->getDefaultValueConstantName());
+
                 if ($cmps) {
                     /** @var ClientMethodType $cmpi */
                     $cmpi = reset($cmps)->newInstance();
