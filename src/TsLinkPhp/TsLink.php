@@ -20,6 +20,14 @@ class TsLink
         $this->service = $service;
     }
 
+    /** @var MiddlewareInterface[] */
+    public array $middlewares = [];
+
+    public function addMiddleware(MiddlewareInterface $middleware): void
+    {
+        $this->middlewares[] = $middleware;
+    }
+
     public function processRequest(string $src): Response
     {
         $res = new Response();
@@ -36,8 +44,17 @@ class TsLink
                     }
                 }
             }
-            $pars = $srcStruct["pars"];
-            $res->response = $this->service->$methodName(...$pars);
+            $req = new Request(
+                $methodName,
+                $srcStruct["pars"],
+            );
+            $event = new MiddlewareEvent($this, $req, $res);
+            $this->currentMiddleware = 0;
+
+            // $event->response->response = $this->service->{$event->request->methodName}(...$event->request->data);
+            $event->next();
+
+            $res = $event->response;
             if ($this->service instanceof IContextUpdate) {
                 $res->context = $this->service->getContextUpdates();
             }
@@ -52,5 +69,17 @@ class TsLink
         }
 
         return $res;
+    }
+
+    protected int $currentMiddleware = 0;
+
+    public function callNextMiddleware(MiddlewareEvent $event)
+    {
+        $this->currentMiddleware++;
+        if ($this->currentMiddleware <= count($this->middlewares)) {
+            $this->middlewares[$this->currentMiddleware - 1]->process($event);
+        } else {
+            $event->response->response = $this->service->{$event->request->methodName}(...$event->request->data);
+        }
     }
 }

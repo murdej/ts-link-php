@@ -96,7 +96,14 @@ class TsCodeGenerator
         }
 
         foreach ($sources as $source) {
-            $ln(($this->useJsModules ? "export " : "") . "class $source->className extends $this->baseClassName {");
+            $ln(
+                ($this->useJsModules ? "export " : "")
+                . "class $source->className extends $this->baseClassName "
+                . ($source->classReflection->classImplements
+                    ? 'implements ' . implode(', ', array_unique($source->classReflection->classImplements))
+                    : '')
+                . "{"
+            );
             if ($source->endpoint) {
                 $ln(
                     "\t" . 'constructor(url'
@@ -126,8 +133,8 @@ class TsCodeGenerator
                     . "); }";
                 $ln($m);
             }
+            $ln("}");
         }
-        $ln("}");
 
         return $res;
     }

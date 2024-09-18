@@ -2,6 +2,7 @@
 
 namespace Murdej\TsLinkPhp\Bridges\Nette;
 
+use Murdej\TsLinkPhp\MiddlewareInterface;
 use Murdej\TsLinkPhp\TsLink;
 use Murdej\TsLinkPhp\TsCodeGenerator;
 use Nette\Application\BadRequestException;
@@ -28,6 +29,12 @@ class TLApplication
     public string $codeGenCNRemoveSufix = 'TL';
 
     public bool $codeGenEnabled = true;
+
+    public array $middlewares = [];
+
+    public function addMiddleware(MiddlewareInterface $middleware) : void {
+        $this->middlewares[] = $middleware;
+    }
 
     /** @throws */
     public function run(): void
@@ -64,6 +71,7 @@ class TLApplication
                 if (method_exists($cl, 'startup')) $cl->startup();
 
                 $tsl = new TsLink($cl);
+                $tsl->middlewares = $this->middlewares;
                 $res = $tsl->processRequest($this->httpRequest->getRawBody());
 
                 $filePath = $res->getFilePath();

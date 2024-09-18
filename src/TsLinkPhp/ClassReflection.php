@@ -14,6 +14,9 @@ class ClassReflection
     /** @var string[][] */
     public array $imports = [];
 
+    /** @var string[] */
+    public array $classImplements = [];
+
     public string $classShortName;
 
     public function __construct(?string $className = null)
@@ -75,7 +78,17 @@ class ClassReflection
             $this->getImportsFromAttributes($method->getAttributes(ClientMethodImport::class));
         }
 
-        $this->getImportsFromAttributes($refl->getAttributes(ClientMethodImport::class));
+        $refl2 = $refl;
+        while ($refl2) {
+            $this->getImportsFromAttributes($refl2->getAttributes(ClientMethodImport::class));
+            $classAttributes = $refl2->getAttributes(ClientClass::class);
+            if ($classAttributes) {
+                /** @var ClientClass $classAttribute */
+                $classAttribute = reset($classAttributes)->newInstance();
+                $this->classImplements = array_merge($this->classImplements, $classAttribute->implements);
+            }
+            $refl2 = $refl2->getParentClass();
+        }
     }
 
     private function getImportsFromAttributes(array $attributes): void

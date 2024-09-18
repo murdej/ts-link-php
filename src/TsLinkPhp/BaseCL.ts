@@ -73,6 +73,15 @@ export class BaseCL {
 	constructor(url: string = "") {
 		this.url = url;
 	}
+
+
+	/* static getInstance(): self
+	{
+		if (!this.instance) {
+			this.instance = new this();
+		}
+		return this.instance;
+	} */
 }
 
 export type CallMethodResponse = {
