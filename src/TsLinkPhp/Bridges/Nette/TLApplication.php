@@ -42,17 +42,6 @@ class TLApplication
         set_error_handler([Debugger::class, 'errorHandler']);
         try {
             $name = substr($this->httpRequest->getUrl()->path, strlen($this->urlPrefix));
-            //todo:
-            /* if (Strings::startsWith($name, 'upload/')) {
-                $fileName = substr($name, 7);
-                $tf = $this->tempFileStorage->restore($fileName);
-                if (!$tf) $res = [ 'status' => 'Not found' ];
-                else {
-                    $res = [ 'status' => 'Ok' ];
-                    $tf->write();
-                }
-                (new TextResponse(json_encode($res)))->send($this->httpRequest, $this->httpResponse);
-            } else */
             if ($name === '@code-gen' || $name === '@code-dump') {
                 if (!$this->codeGenFile && $name === '@code-gen') throw new BadRequestException('Not allowed', 405);
                 switch ($name) {
@@ -72,7 +61,14 @@ class TLApplication
 
                 $tsl = new TsLink($cl);
                 $tsl->middlewares = $this->middlewares;
-                $res = $tsl->processRequest($this->httpRequest->getRawBody());
+                if (str_starts_with($this->httpRequest->getHeader('Content-Type'), 'multipart/form-data')) {
+                    $request = $this->httpRequest->getPost('request');
+                    $files = $this->httpRequest->getFiles();
+                } else {
+                    $request = $this->httpRequest->getRawBody();
+                    $files = [];
+                }
+                $res = $tsl->processRequest($request, $files);
 
                 $filePath = $res->getFilePath();
                 if ($filePath) {
@@ -91,7 +87,6 @@ class TLApplication
         public string $urlPrefix,
         protected IRequest $httpRequest,
         protected IResponse $httpResponse,
-        //todo: protected TempFileStorage|null $tempFileStorage = null,
     )
     {
     }

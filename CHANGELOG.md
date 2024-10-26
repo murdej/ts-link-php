@@ -1,3 +1,8 @@
+# Version 1.5.0
+
+ - Middleware event has service field
+ - Mutlipart content type and file transfer
+
 # Version 1.4.0
 
  - Middeware

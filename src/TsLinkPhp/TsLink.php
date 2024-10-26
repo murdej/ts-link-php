@@ -28,7 +28,7 @@ class TsLink
         $this->middlewares[] = $middleware;
     }
 
-    public function processRequest(string $src): Response
+    public function processRequest(string $src, array $files = []): Response
     {
         $res = new Response();
         try {
@@ -44,11 +44,27 @@ class TsLink
                     }
                 }
             }
+            $pars = [];
+            foreach ($srcStruct["pars"] as $i => $param) {
+                if (in_array($i, ($srcStruct["uploadArgs"] ?? []))) {
+                    if (is_array($param)) {
+                        $newParam = [];
+                        foreach ($param as $fileId) {
+                            $newParam[] = $files[$fileId];
+                        }
+                        $pars[] = $newParam;
+                    } else {
+                        $pars[] = $files[$param];
+                    }
+                } else {
+                    $pars[] = $param;
+                }
+            }
             $req = new Request(
                 $methodName,
-                $srcStruct["pars"],
+                $pars,
             );
-            $event = new MiddlewareEvent($this, $req, $res);
+            $event = new MiddlewareEvent($this, $req, $res, $this->service);
             $this->currentMiddleware = 0;
 
             // $event->response->response = $this->service->{$event->request->methodName}(...$event->request->data);

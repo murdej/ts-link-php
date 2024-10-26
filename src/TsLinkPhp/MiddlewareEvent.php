@@ -12,6 +12,7 @@ class MiddlewareEvent
         public TsLink $tsLink,
         public Request $request,
         public Response $response,
+        public object $service,
     )
     {
     }
