@@ -20,6 +20,9 @@ class TLApplication
 
     protected array $cls = [];
 
+    /**
+     * @var string|null
+     */
     public string|null $codeGenFile = null;
 
     public string $codeGenFormat = 'ts';

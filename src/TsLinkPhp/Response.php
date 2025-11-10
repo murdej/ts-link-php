@@ -9,11 +9,12 @@ use JsonSerializable;
 
 class Response implements JsonSerializable
 {
-    public Exception|null $exception = null;
+    public function __construct(
+        public mixed $response = null,
+        public ?array $context = null,
+        public Exception|null $exception = null,
+    ) { }
 
-    public mixed $response = null;
-
-    public ?array $context = null;
 
     public function jsonSerialize(): array
     {

@@ -54,6 +54,7 @@ class ClassReflection
                     /** @var ClientMethodType $cmpi */
                     $cmpi = reset($cmps)->newInstance();
                     $crmp->dataType = $cmpi->type;
+                    if ($cmpi->importFrom) $this->addImport($cmpi->importFrom, $cmpi->type);
                 } else {
                     $crmp->dataType = $parameter->getType();
                 }
@@ -69,6 +70,7 @@ class ClassReflection
                 /** @var ClientMethodType $cmpi */
                 $cmpi = reset($cmps)->newInstance();
                 $crm->returnDataType = $cmpi->type;
+                if ($cmpi->importFrom) $this->addImport($cmpi->importFrom, $cmpi->type);
             } else {
                 $crm->returnDataType = $method->getReturnType();
             }
@@ -97,11 +99,18 @@ class ClassReflection
             /** @var ClientMethodImport $imp */
             $imp = $attribute->newInstance();
             foreach ($imp->types as $type) {
-                if (!isset($this->imports[$imp->from])) {
-                    $this->imports[$imp->from] = [];
-                }
-                $this->imports[$imp->from][] = $type;
+                $this->addImport($imp->from, $type);
             }
         }
+    }
+
+    private function addImport(string $importFrom, string $typeName): void
+    {
+        if (str_starts_with($typeName, 'new ')) $typeName = substr($typeName, strlen('new '));
+        if (str_ends_with($typeName, '[]')) $typeName = substr($typeName, 0, -2);
+        if (!isset($this->imports[$importFrom])) {
+            $this->imports[$importFrom] = [];
+        }
+        $this->imports[$importFrom][] = $typeName;
     }
 }

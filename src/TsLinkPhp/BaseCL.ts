@@ -2,8 +2,6 @@
 export class BaseCL {
 	public context : any = {};
 
-	public foo = 42;
-
 	public url : string = "";
 
 	public onPrepareRequest : ((ev: ClCallEvent, data : any) => any)|null = null;
@@ -15,7 +13,7 @@ export class BaseCL {
 	public onError : ((handle : any, error : any)=>void)|null = null;
 
 	// @ts-ignore
-	protected async callMethod(methodName : string, args : any/* : IArguments*/, callOpts : CallOpts = { rawResult: false }, newDataType = null) : Promise<any> {
+	protected async callMethod(methodName : string, args : any/* : IArguments*/, callOpts : CallOpts = { rawResult: false }, newDataType: new(data:any)=>any = null) : Promise<any> {
 
 		const newArgs= [];
 		const uploads: Record<string, File> = {};
@@ -94,7 +92,7 @@ export class BaseCL {
 
 				if (response.status == "ok")
 				{
-					if (this.onLoaded) this.onLoaded(loadingHandle, response);
+					// if (this.onLoaded) this.onLoaded(loadingHandle, response);
 					if (newDataType) response.response = new newDataType(response.response);
 					return response.response;
 				}
@@ -104,7 +102,7 @@ export class BaseCL {
 				}
 			}
 		} catch (exc) {
-			if (this.onLoaded) this.onLoaded(loadingHandle, response);
+			// if (this.onLoaded) this.onLoaded(loadingHandle, response);
 			if (this.onError) this.onError(loadingHandle, exc);
 			throw exc;
 		} finally {

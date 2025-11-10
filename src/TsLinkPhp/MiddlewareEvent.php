@@ -13,6 +13,7 @@ class MiddlewareEvent
         public Request $request,
         public Response $response,
         public object $service,
+        public array $methodParams,
     )
     {
     }

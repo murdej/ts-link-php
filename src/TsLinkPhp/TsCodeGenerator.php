@@ -13,7 +13,15 @@ class TsCodeGenerator
 
     public string $baseClassName = "BaseCL";
 
-    public string $baseImportPath = "../";
+    public bool $exportSingleton = true;
+
+    /**
+     * @var string|array<string,string>
+     */
+    public string|array $baseImportPath = [
+        '@npm:' => '',
+        '' => "../",
+    ];
 
     /** @deprecated Use add method */
     public ?string $url = null;
@@ -78,10 +86,22 @@ class TsCodeGenerator
         }
 
         foreach ($imports as $file => $classes) {
+            $pathPrefix = "";
+            if (is_string($this->baseImportPath)) {
+                $pathPrefix = $this->baseImportPath;
+            } else {
+                foreach ($this->baseImportPath as $prefix => $pp) {
+                    if (str_starts_with($file, $prefix)) {
+                        $pathPrefix = $pp;
+                        $file = substr($file, strlen($prefix));
+                        break;
+                    }
+                }
+            }
             $ln(
                 "import { "
                 . implode(', ', array_unique($classes))
-                . " } from \"" . $this->baseImportPath . $file . "\";"
+                . " } from \"" . $pathPrefix . $file . "\";"
             );
         }
 
@@ -134,6 +154,13 @@ class TsCodeGenerator
                 $ln($m);
             }
             $ln("}");
+
+            if ($this->exportSingleton) {
+                $ln(
+                    ($this->useJsModules ? "export " : "")
+                    . "const " . lcfirst($source->className) . "= new $source->className();"
+                );
+            }
         }
 
         return $res;

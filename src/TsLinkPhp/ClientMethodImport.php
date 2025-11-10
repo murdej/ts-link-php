@@ -6,7 +6,7 @@ namespace Murdej\TsLinkPhp;
 
 use Attribute;
 
-#[Attribute]
+#[Attribute(Attribute::IS_REPEATABLE|Attribute::TARGET_METHOD|Attribute::TARGET_CLASS)]
 class ClientMethodImport
 {
     public string $from;

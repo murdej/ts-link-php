@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Murdej\TsLinkPhp;
 
 use Closure;
+use ReflectionNamedType;
+use ReflectionParameter;
 use Throwable;
 
 class TsLink
@@ -45,6 +47,7 @@ class TsLink
                 }
             }
             $pars = [];
+            $methodArguments = $this->getMethodArguments($this->service, $methodName);
             foreach ($srcStruct["pars"] as $i => $param) {
                 if (in_array($i, ($srcStruct["uploadArgs"] ?? []))) {
                     if (is_array($param)) {
@@ -57,6 +60,10 @@ class TsLink
                         $pars[] = $files[$param];
                     }
                 } else {
+                    $arg = $methodArguments[$i];
+                    if (in_array('DateTime', $arg['types']) && !in_array('string', $arg['types']) && is_string($param)) {
+                        $param = new \DateTime($param);
+                    }
                     $pars[] = $param;
                 }
             }
@@ -64,7 +71,7 @@ class TsLink
                 $methodName,
                 $pars,
             );
-            $event = new MiddlewareEvent($this, $req, $res, $this->service);
+            $event = new MiddlewareEvent($this, $req, $res, $this->service, $methodArguments);
             $this->currentMiddleware = 0;
 
             // $event->response->response = $this->service->{$event->request->methodName}(...$event->request->data);
@@ -85,6 +92,27 @@ class TsLink
         }
 
         return $res;
+    }
+
+    protected function getMethodArguments(object $service, string $methodName): array
+    {
+        $methodReflection = new \ReflectionMethod($service, $methodName);
+
+        return array_map(
+            function (ReflectionParameter $parameter) use ($methodReflection) {
+                $type = $parameter->getType();
+                return [
+                    'nullable' => $type->allowsNull(),
+                    'types' => array_map(
+                        fn($ref) => $ref->getName(),
+                        $type instanceof ReflectionNamedType
+                            ? [ $type ]
+                            : $type->getTypes()
+                    )
+                ];
+            },
+            $methodReflection->getParameters(),
+        );
     }
 
     protected int $currentMiddleware = 0;
