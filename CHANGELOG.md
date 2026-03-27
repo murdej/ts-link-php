@@ -1,3 +1,14 @@
+# Version 1.6.0
+
+ - **BaseCL**: Added `EventMethodCallData` and `EventError` typed exports for strongly-typed event callbacks
+ - **BaseCL**: Added `dataFetcher` property — an overridable fetch implementation (`defaultDataFetcher`) for customizing HTTP requests
+ - **BaseCL**: `onPrepareRequest`, `onLoading`, and `onError` callbacks now use typed parameters (`EventMethodCallData`, `EventError`)
+ - **BaseCL**: Added `DataFetcherResponse` type
+ - **BaseCL**: Fixed `FileList` guard to work in non-browser environments (`typeof FileList !== 'undefined'`)
+ - **TLApplication**: Added CORS support via `cors` constructor parameter (accepts `true` or an array of allowed origins)
+ - **TLApplication**: Added `debugger` property with modes: `Nette` (default), `Json`, `Text`, `Hide` — controls error output format
+ - **TLApplication**: Fixed `@code-dump` route to work even when `codeGenFile` is not set
+
 # Version 1.5.0
 
  - Middleware event has service field
