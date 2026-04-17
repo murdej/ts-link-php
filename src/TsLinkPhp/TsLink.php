@@ -39,7 +39,7 @@ class TsLink
             $methodName = $srcStruct["name"] ?? null;
             $context = $srcStruct["context"] ?? [];
             if ($methodName === null) throw new \InvalidArgumentException('Missing method name (field name) in payload.');
-            if (!($srcStruct["pars"] ?? false)) throw new \InvalidArgumentException('Missing method arguments (field pars) in payload.');
+            if (!isset($srcStruct["pars"])) throw new \InvalidArgumentException('Missing method arguments (field pars) in payload.');
             if ($context && isset($this->service->context)) {
                 foreach ($context as $k => $v) {
                     if (is_array($this->service->context)) {

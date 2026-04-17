@@ -1,3 +1,7 @@
+# Version 1.7.1
+
+ - Fix no arguments bug
+
 # Version 1.7.0
 
  - **TsCodeGenerator**: Added `$importClassPrefix` static property (default `'@'`) to distinguish class (value) imports from type-only imports — prefixed types are emitted as `import { ClassName }`, others as `import { type TypeName }`
