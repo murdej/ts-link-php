@@ -115,12 +115,15 @@ class TLApplication
                 $errorResponse = '';
                 switch($this->debugger) {
                     case self::Debugger_Json:
-                        $errorResponse = Json::encode([
-                            'code' => $e->getCode(),
-                            'message' => $e->getMessage(),
-                            'file' => $e->getFile(),
-                            'trace' => $e->getTrace(),
-                        ]);
+                        $errorResponse = json_encode(
+                            [
+                                'code' => $e->getCode(),
+                                'message' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'trace' => $e->getTrace(),
+                            ],
+                            JSON_PARTIAL_OUTPUT_ON_ERROR
+                        );
                         break;
                     case self::Debugger_Text:
                         $errorResponse = (string)$e;

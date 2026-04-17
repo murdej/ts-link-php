@@ -106,7 +106,7 @@ class ClassReflection
 
     private function addImport(string $importFrom, string $typeName): void
     {
-        if (str_starts_with($typeName, 'new ')) $typeName = substr($typeName, strlen('new '));
+        if (str_starts_with($typeName, 'new ')) $typeName = TsCodeGenerator::$importClassPrefix . substr($typeName, strlen('new '));
         if (str_ends_with($typeName, '[]')) $typeName = substr($typeName, 0, -2);
         if (!isset($this->imports[$importFrom])) {
             $this->imports[$importFrom] = [];

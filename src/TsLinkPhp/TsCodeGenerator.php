@@ -15,6 +15,8 @@ class TsCodeGenerator
 
     public bool $exportSingleton = true;
 
+    public static ?string $importClassPrefix = '@';
+
     /**
      * @var string|array<string,string>
      */
@@ -98,6 +100,14 @@ class TsCodeGenerator
                     }
                 }
             }
+            // if ($this->importClassPrefix) {
+                $classes = array_map(
+                    fn($typeName) => (static::$importClassPrefix && str_starts_with($typeName, static::$importClassPrefix))
+                        ? substr($typeName, 1)
+                        : 'type ' . $typeName,
+                    $classes
+                );
+            // }
             $ln(
                 "import { "
                 . implode(', ', array_unique($classes))
@@ -204,6 +214,9 @@ class TsCodeGenerator
         if ($dataType && $dataType[0] === "?") {
             $dataType = substr($dataType, 1);
             $nullable = true;
+        }
+        if (str_starts_with($dataType, '@')) {
+            $dataType = substr($dataType, 1);
         }
 
         if (isset($aliases[$dataType])) {

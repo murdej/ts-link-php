@@ -1,3 +1,9 @@
+# Unreleased
+
+ - **TsCodeGenerator**: Added `$importClassPrefix` static property (default `'@'`) to distinguish class (value) imports from type-only imports — prefixed types are emitted as `import { ClassName }`, others as `import { type TypeName }`
+ - **ClassReflection**: `new ClassName` references now carry the import class prefix so they are correctly emitted as value imports instead of `type` imports
+ - **TLApplication**: JSON debugger now uses native `json_encode` with `JSON_PARTIAL_OUTPUT_ON_ERROR` instead of `Nette\Utils\Json::encode`, preventing serialization failures when exception traces contain non-serializable objects
+
 # Version 1.6.0
 
  - **BaseCL**: Added `EventMethodCallData` and `EventError` typed exports for strongly-typed event callbacks

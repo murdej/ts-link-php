@@ -71,7 +71,13 @@ class TsLink
                 $methodName,
                 $pars,
             );
-            $event = new MiddlewareEvent($this, $req, $res, $this->service, $methodArguments);
+            $event = new MiddlewareEvent(
+                $this,
+                $req,
+                $res,
+                $this->service,
+                $methodArguments,
+            );
             $this->currentMiddleware = 0;
 
             // $event->response->response = $this->service->{$event->request->methodName}(...$event->request->data);
