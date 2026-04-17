@@ -47,6 +47,11 @@ class TLApplication
     public const string Debugger_Text = 'Text';
     public const string Debugger_Hide = 'Hide';
 
+    public array $corsAllowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+    public array $corsAllowedHeaders = ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie'];
+
+    public int $corsMaxAge = 300;
+
     /** @throws */
     public function run(): void
     {
@@ -54,15 +59,12 @@ class TLApplication
         $origin = $this->httpRequest->getHeader('origin');
         if ($this->cors === true || (is_array($this->cors) && in_array($origin, $this->cors))) {
             $requestMethod = $this->httpRequest->getMethod();
-            $allowedMethods = 'GET, POST, PUT, DELETE, OPTIONS';
-            $allowedHeaders = 'Content-Type, Authorization, X-Requested-With';
-            $maxAge = 1;
 
             $this->httpResponse->setHeader('Access-Control-Allow-Origin', $origin);
-            $this->httpResponse->setHeader('Access-Control-Allow-Methods', $allowedMethods);
-            $this->httpResponse->setHeader('Access-Control-Allow-Headers', $allowedHeaders);
+            $this->httpResponse->setHeader('Access-Control-Allow-Methods', implode(', ', $this->corsAllowedMethods));
+            $this->httpResponse->setHeader('Access-Control-Allow-Headers', implode(', ', $this->corsAllowedHeaders));
             $this->httpResponse->setHeader('Access-Control-Allow-Credentials', 'true');
-            $this->httpResponse->setHeader('Access-Control-Max-Age', (string)$maxAge);
+            $this->httpResponse->setHeader('Access-Control-Max-Age', (string)$this->corsMaxAge);
 
             if ($requestMethod === 'OPTIONS' && $origin) {
                 $this->httpResponse->setCode(204);
@@ -71,7 +73,9 @@ class TLApplication
 
         }
         try {
-            $name = substr($this->httpRequest->getUrl()->path, strlen($this->urlPrefix));
+            $fullPath = $this->httpRequest->getUrl()->path;
+            if (!str_starts_with($fullPath, $this->urlPrefix)) throw new BadRequestException("Prefix not match.", 404);
+            $name = substr($fullPath, strlen($this->urlPrefix));
             if ($name === '@code-gen' || $name === '@code-dump') {
                 if (!$this->codeGenEnabled || (!$this->codeGenFile && $name === '@code-gen')) throw new BadRequestException('Not allowed', 405);
                 switch ($name) {
@@ -91,7 +95,10 @@ class TLApplication
 
                 $tsl = new TsLink($cl);
                 $tsl->middlewares = $this->middlewares;
-                if (str_starts_with($this->httpRequest->getHeader('Content-Type'), 'multipart/form-data')) {
+                if (str_starts_with(
+                    $this->httpRequest->getHeader('Content-Type') ?? '',
+                    'multipart/form-data'
+                )) {
                     $request = $this->httpRequest->getPost('request');
                     $files = $this->httpRequest->getFiles();
                 } else {
@@ -179,12 +186,12 @@ class TLApplication
 
     public function getLinkForClass(string $cName): string
     {
-        return $this->urlPrefix . '' . $this->cNameToName[$cName];
+        return rtrim($this->urlPrefix, '/') . '/' . $this->cNameToName[$cName];
     }
 
     public function getLinkForName(string $name): string
     {
-        return $this->urlPrefix . '/' . $name;
+        return rtrim($this->urlPrefix, '/') . '/' . $name;
     }
 
     public function getRegisterClasses(): array

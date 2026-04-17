@@ -3,6 +3,13 @@
  - **TsCodeGenerator**: Added `$importClassPrefix` static property (default `'@'`) to distinguish class (value) imports from type-only imports — prefixed types are emitted as `import { ClassName }`, others as `import { type TypeName }`
  - **ClassReflection**: `new ClassName` references now carry the import class prefix so they are correctly emitted as value imports instead of `type` imports
  - **TLApplication**: JSON debugger now uses native `json_encode` with `JSON_PARTIAL_OUTPUT_ON_ERROR` instead of `Nette\Utils\Json::encode`, preventing serialization failures when exception traces contain non-serializable objects
+ - **TLApplication**: CORS headers (`allowedMethods`, `allowedHeaders`, `maxAge`) are now configurable via public properties instead of being hardcoded
+ - **TLApplication**: Fixed `getLinkForClass` URL to consistently include `/` separator between prefix and name (same as `getLinkForName`)
+ - **TLApplication**: Fixed null dereference when `Content-Type` header is missing in multipart detection
+ - **TLApplication**: Added URL prefix validation — throws 404 when request path does not start with configured prefix
+ - **TsCodeGenerator**: Fixed deprecated `$classReflection` path — no longer wraps already-reflected object in a second `ClassReflection`
+ - **TsLink**: Added validation for empty/missing request body, `name` field, and `pars` field
+ - **TsLink**: Fixed fatal error in `getMethodArguments` when a parameter has no type declaration (`$type` was null)
 
 # Version 1.6.0
 

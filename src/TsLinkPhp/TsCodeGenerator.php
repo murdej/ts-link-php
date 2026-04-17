@@ -61,7 +61,7 @@ class TsCodeGenerator
     {
         /** @var TsCodeGeneratorSource[] $sources */
         $sources = array_merge(
-            $this->classReflection ? [new ClassReflection($this->classReflection)] : [],
+            $this->classReflection ? [ $this->classReflection ] : [],
             $this->sources
         );
 

@@ -34,9 +34,12 @@ class TsLink
     {
         $res = new Response();
         try {
+            if (!$src) throw new \InvalidArgumentException('Request is empty.');
             $srcStruct = json_decode($src, true, 512, JSON_THROW_ON_ERROR);
-            $methodName = $srcStruct["name"];
-            $context = $srcStruct["context"];
+            $methodName = $srcStruct["name"] ?? null;
+            $context = $srcStruct["context"] ?? [];
+            if ($methodName === null) throw new \InvalidArgumentException('Missing method name (field name) in payload.');
+            if (!($srcStruct["pars"] ?? false)) throw new \InvalidArgumentException('Missing method arguments (field pars) in payload.');
             if ($context && isset($this->service->context)) {
                 foreach ($context as $k => $v) {
                     if (is_array($this->service->context)) {
@@ -60,7 +63,7 @@ class TsLink
                         $pars[] = $files[$param];
                     }
                 } else {
-                    $arg = $methodArguments[$i];
+                    $arg = $methodArguments[$i] ?? null;
                     if (in_array('DateTime', $arg['types']) && !in_array('string', $arg['types']) && is_string($param)) {
                         $param = new \DateTime($param);
                     }
@@ -108,13 +111,15 @@ class TsLink
             function (ReflectionParameter $parameter) use ($methodReflection) {
                 $type = $parameter->getType();
                 return [
-                    'nullable' => $type->allowsNull(),
-                    'types' => array_map(
-                        fn($ref) => $ref->getName(),
-                        $type instanceof ReflectionNamedType
-                            ? [ $type ]
-                            : $type->getTypes()
-                    )
+                    'nullable' => $type?->allowsNull(),
+                    'types' => $type
+                        ? array_map(
+                            fn($ref) => $ref->getName(),
+                            $type instanceof ReflectionNamedType
+                                ? [ $type ]
+                                : $type->getTypes()
+                        )
+                        : [],
                 ];
             },
             $methodReflection->getParameters(),
