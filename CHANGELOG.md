@@ -1,4 +1,4 @@
-# Unreleased
+# Version 1.7.0
 
  - **TsCodeGenerator**: Added `$importClassPrefix` static property (default `'@'`) to distinguish class (value) imports from type-only imports — prefixed types are emitted as `import { ClassName }`, others as `import { type TypeName }`
  - **ClassReflection**: `new ClassName` references now carry the import class prefix so they are correctly emitted as value imports instead of `type` imports
