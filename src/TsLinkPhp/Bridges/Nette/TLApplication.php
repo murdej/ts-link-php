@@ -126,7 +126,7 @@ class TLApplication
                             [
                                 'code' => $e->getCode(),
                                 'message' => $e->getMessage(),
-                                'file' => $e->getFile(),
+                                'file' => $e->getFile() . ':' . $e->getLine(),
                                 'trace' => $e->getTrace(),
                             ],
                             JSON_PARTIAL_OUTPUT_ON_ERROR
