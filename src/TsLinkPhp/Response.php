@@ -9,6 +9,9 @@ use JsonSerializable;
 
 class Response implements JsonSerializable
 {
+    /** @var array<array{id: mixed, response: Response}>|null */
+    public ?array $batch = null;
+
     public function __construct(
         public mixed $response = null,
         public ?array $context = null,
@@ -18,6 +21,21 @@ class Response implements JsonSerializable
 
     public function jsonSerialize(): array
     {
+        if ($this->batch !== null) {
+            $res = [
+                "batch" => array_map(
+                    fn(array $item) => ['id' => $item['id']] + $item['response']->jsonSerialize(),
+                    $this->batch
+                ),
+            ];
+
+            if ($this->context) {
+                $res["context"] = $this->context;
+            }
+
+            return $res;
+        }
+
         $res = ["status" => $this->exception ? "exception" : "ok"];
 
         if ($this->exception) {

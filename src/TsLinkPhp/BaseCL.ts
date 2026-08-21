@@ -12,6 +12,21 @@ export type EventError = {
 	error: Error|any|null,
 }
 
+export type BatchConfig = {
+	sleepTimeout: number,
+	maxTimeout: number,
+	maxRequests: number,
+}
+
+type BatchQueueItem = {
+	id: number,
+	srcData: EventMethodCallData,
+	uploads: Record<string, File>,
+	newDataType: (new(data:any)=>any) | null,
+	resolve: (value: any) => void,
+	reject: (reason: any) => void,
+}
+
 export class BaseCL {
 	public context : any = {};
 
@@ -26,6 +41,18 @@ export class BaseCL {
 	public onError : ((handle : any, ev: EventError)=>void)|null = null;
 
     public dataFetcher: (input: RequestInfo | URL, init: RequestInit, ev: ClCallEvent) => Promise<DataFetcherResponse> = this.defaultDataFetcher;
+
+    protected batchMode : boolean = false;
+
+    protected batchConfig : BatchConfig|null = null;
+
+    protected batchQueue : BatchQueueItem[] = [];
+
+    protected batchNextId : number = 1;
+
+    protected batchSleepTimer : ReturnType<typeof setTimeout>|null = null;
+
+    protected batchMaxTimer : ReturnType<typeof setTimeout>|null = null;
 
     public async defaultDataFetcher(input: RequestInfo | URL, init: RequestInit, ev: ClCallEvent): Promise<DataFetcherResponse>
     {
@@ -48,8 +75,7 @@ export class BaseCL {
     }
 
 	// @ts-ignore
-	protected async callMethod(methodName : string, args : any/* : IArguments*/, callOpts : CallOpts = { rawResult: false }, newDataType: new(data:any)=>any = null) : Promise<any> {
-
+	protected buildCallData(methodName : string, args : any) : { srcData: EventMethodCallData, uploads: Record<string, File> } {
 		const newArgs= [];
 		const uploads: Record<string, File> = {};
 		let c = 0;
@@ -77,16 +103,21 @@ export class BaseCL {
 			i++;
 		}
 
-		const srcData: EventMethodCallData = {
-			name: methodName,
-			context: this.context,
-			pars: newArgs,
-			uploadArgs,
+		return {
+			srcData: {
+				name: methodName,
+				context: this.context,
+				pars: newArgs,
+				uploadArgs,
+			},
+			uploads,
 		};
+	}
 
+	protected async sendSingle(srcData: EventMethodCallData, uploads: Record<string, File>, newDataType: (new(data:any)=>any)|null, args: any) : Promise<any> {
 		let contentType: string|null;
 		let postData: string|FormData;
-		if (uploadArgs.length > 0) {
+		if (Object.keys(uploads).length > 0) {
 			contentType = null;
 			postData = new FormData();
 			postData.append('request', JSON.stringify(srcData));
@@ -147,6 +178,134 @@ export class BaseCL {
 		} finally {
 			if (this.onLoaded) this.onLoaded(loadingHandle, response);
 		}
+	}
+
+	protected queueBatchCall(srcData: EventMethodCallData, uploads: Record<string, File>, newDataType: (new(data:any)=>any)|null, resolve: (value:any)=>void, reject: (reason:any)=>void) : void {
+		const id = this.batchNextId++;
+		this.batchQueue.push({ id, srcData, uploads, newDataType, resolve, reject });
+
+		if (this.batchConfig) {
+			const config = this.batchConfig;
+
+			if (this.batchSleepTimer) clearTimeout(this.batchSleepTimer);
+			this.batchSleepTimer = setTimeout(() => this.send(), config.sleepTimeout);
+
+			if (this.batchQueue.length === 1) {
+				this.batchMaxTimer = setTimeout(() => this.send(), config.maxTimeout);
+			}
+
+			if (this.batchQueue.length >= config.maxRequests) {
+				this.send();
+			}
+		}
+	}
+
+	/**
+	 * Turns on batch mode. With a callback, runs it, sends the queued batch and returns the callback's
+	 * return value (typically an array of the still-pending call promises, for Promise.all). Without a
+	 * callback, just enables batch mode and returns this - the caller must call .send() themselves.
+	 */
+	public useBatch(callback: ((tl: this) => any)|null = null) : any {
+		this.batchMode = true;
+		this.batchConfig = null;
+
+		if (callback) {
+			const result = callback(this);
+			this.send();
+			return result;
+		}
+
+		return this;
+	}
+
+	/**
+	 * Returns a clone of this instance with batch mode on and auto-flush governed by config
+	 * (sleepTimeout/maxTimeout/maxRequests). Passing null returns a clone with batching off.
+	 */
+	public useBatchAuto(config: BatchConfig|null) : this {
+		const clone = Object.assign(Object.create(Object.getPrototypeOf(this)), this) as this;
+		clone.batchMode = config !== null;
+		clone.batchConfig = config;
+		clone.batchQueue = [];
+		clone.batchNextId = 1;
+		clone.batchSleepTimer = null;
+		clone.batchMaxTimer = null;
+		return clone;
+	}
+
+	/** Flushes the current batch queue as a single request. */
+	public async send() : Promise<void> {
+		if (this.batchSleepTimer) { clearTimeout(this.batchSleepTimer); this.batchSleepTimer = null; }
+		if (this.batchMaxTimer) { clearTimeout(this.batchMaxTimer); this.batchMaxTimer = null; }
+
+		const queue = this.batchQueue;
+		this.batchQueue = [];
+		if (queue.length === 0) return;
+
+		const uploads: Record<string, File> = {};
+		for (const item of queue) {
+			for (const k in item.uploads) {
+				uploads[`${item.id}_${k}`] = item.uploads[k];
+			}
+		}
+
+		const batch = queue.map(item => ({ id: item.id, ...item.srcData }));
+
+		let contentType: string|null;
+		let postData: string|FormData;
+		if (Object.keys(uploads).length > 0) {
+			contentType = null;
+			postData = new FormData();
+			postData.append('request', JSON.stringify({ batch }));
+			for (const k in uploads) {
+				// @ts-ignore
+				postData.append(k, uploads[k]);
+			}
+		} else {
+			contentType = 'application/json';
+			postData = JSON.stringify({ batch });
+		}
+
+		const ev: ClCallEvent = {
+			url: this.url,
+			requestInit: {
+				method: 'POST',
+				body: postData,
+				headers: contentType ? { 'Content-Type': contentType } : {},
+			}
+		}
+
+		try {
+			const fetchRes = await this.dataFetcher(ev.url, ev.requestInit, ev);
+			const items: any[] = fetchRes.response?.batch ?? [];
+			const byId = new Map(items.map((item: any) => [item.id, item]));
+
+			for (const q of queue) {
+				const item = byId.get(q.id);
+				if (!item) {
+					q.reject(new Error('Missing response for batch item id ' + q.id));
+				} else if (item.status === "ok") {
+					q.resolve(q.newDataType ? new q.newDataType(item.response) : item.response);
+				} else {
+					q.reject(new Error(item.exception));
+				}
+			}
+		} catch (exc: any) {
+			for (const q of queue) q.reject(exc);
+		}
+	}
+
+	// @ts-ignore
+	protected async callMethod(methodName : string, args : any/* : IArguments*/, callOpts : CallOpts = { rawResult: false }, newDataType: new(data:any)=>any = null) : Promise<any> {
+		const { srcData, uploads } = this.buildCallData(methodName, args);
+
+		if (this.batchMode) {
+			return new Promise((resolve, reject) => {
+				this.queueBatchCall(srcData, uploads, newDataType, resolve, reject);
+			});
+		}
+
+		return this.sendSingle(srcData, uploads, newDataType, args);
 	}
 
 	constructor(url: string = "") {

@@ -38,6 +38,8 @@ class TLApplication
 
     public string $debugger = self::Debugger_Nette;
 
+    public bool $sendException = true;
+
     public function addMiddleware(MiddlewareInterface $middleware) : void {
         $this->middlewares[] = $middleware;
     }
@@ -95,6 +97,7 @@ class TLApplication
 
                 $tsl = new TsLink($cl);
                 $tsl->middlewares = $this->middlewares;
+                $tsl->sendException = $this->sendException;
                 if (str_starts_with(
                     $this->httpRequest->getHeader('Content-Type') ?? '',
                     'multipart/form-data'

@@ -1,3 +1,22 @@
+# Version 1.8.0
+
+ - **TsLink**: Added batch mode — a request with a `batch` key instead of `name` runs several calls in
+   one request; `processRequest()` now dispatches to new `processItem()`/`processBatch()` internals
+ - **TsLink**: Added `IBatchCall`/`BatchCallEvent` — services implementing `IBatchCall` get a `batchCall()`
+   hook invoked once per batch item (after the item's `Request` is resolved, before the middleware/method
+   call), useful for resetting per-request state between items
+ - **TsLink**: Batch item failures are isolated per item when `$sendException` is `false` (one bad call
+   doesn't sink the rest of the batch); with `$sendException = true` the first failure aborts the whole
+   batch, consistent with single-request behavior
+ - **TsLink**: File uploads inside a batch item are resolved per item via a new `extractBatchItemFiles()`,
+   matching the `{id}_{localKey}` field naming used by the client
+ - **Response**: Added `$batch` property; `jsonSerialize()` emits the `{"batch": [...]}` envelope when set
+ - **BaseCL**: Added client-side batch mode — `useBatch(callback?)`, `useBatchAuto(config)`, and `send()`
+   queue/coalesce several method calls into a single HTTP request
+ - Added a test suite (PHPUnit, `tests/`) and `.gitattributes` (`export-ignore` for `tests/`, `docs/`,
+   and other files not needed in the installed package)
+ - Added usage documentation under `docs/`
+
 # Version 1.7.1
 
  - Fix no arguments bug

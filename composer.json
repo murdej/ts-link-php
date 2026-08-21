@@ -12,7 +12,18 @@
             "Murdej\\TsLinkPhp\\": "src/TsLinkPhp/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Murdej\\TsLinkPhp\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "sort-packages": true
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.3"
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }

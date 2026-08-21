@@ -83,3 +83,8 @@ Then you can call PHP methods from js/ts.
     })();
 </script>
 ```
+
+## Documentation
+
+See [docs](docs/README.md) for the full documentation: request context, middleware, file uploads and
+downloads, error handling, batch mode, the Nette/Symfony integration, and all code generation options.
