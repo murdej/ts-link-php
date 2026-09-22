@@ -78,6 +78,55 @@ method is never invoked and whatever you left on `$event->response` is what gets
 Middleware runs for both single requests and, once per item, for every item inside a
 [batch request](batch-mode.md).
 
+## Argument preparers
+
+Argument preparers convert an incoming argument value before it's passed to the method — e.g. turning a
+JSON string into a `DateTime`, or a plain array into a DTO instance. Register one with
+`addArgumentPreparer()`:
+
+```php
+use Murdej\TsLinkPhp\Dto\ArgumentPreparerEvent;
+
+$tl->addArgumentPreparer(function (ArgumentPreparerEvent $event) {
+    if (is_array($event->value) && in_array(MyDto::class, $event->argument->types)) {
+        $event->value = MyDto::fromArray($event->value);
+    }
+});
+```
+
+`$event->value` is the raw value — mutate it to replace what gets passed to the method — and
+`$event->argument` is a `MethodArgument` describing the target parameter (`nullable`, and `types`: the
+declared type(s) as class/scalar names). Set `$event->callNext = false` to stop any remaining preparers
+from running for that argument. Preparers only run for arguments that resolved a `MethodArgument` (file
+upload arguments never go through them).
+
+By default, `TsLink::$argumentPreparers` contains one built-in preparer that converts a `string` value
+into `DateTime`/`DateTimeImmutable` when the parameter is typed as such (and isn't also typed as
+`string`).
+
+### SmartDTO bridge
+
+If your DTOs extend [`murdej/php-libs`](https://packagist.org/packages/murdej/php-libs)'
+`Murdej\DTO\SmartDTO`, `Murdej\TsLinkPhp\Bridges\PhpLibs\SmartDtoArgumentPreparer` converts any array
+argument typed as a `SmartDTO` subclass via its `fromArray()`:
+
+```php
+use Murdej\TsLinkPhp\Bridges\PhpLibs\SmartDtoArgumentPreparer;
+
+$tl->addArgumentPreparer(new SmartDtoArgumentPreparer());
+```
+
+It's invokable, so it's convenient to wire up from a Nette DI (neon) config instead:
+
+```neon
+services:
+    - Murdej\TsLinkPhp\Bridges\PhpLibs\SmartDtoArgumentPreparer
+
+    tsLink:
+        setup:
+            - addArgumentPreparer(@Murdej\TsLinkPhp\Bridges\PhpLibs\SmartDtoArgumentPreparer)
+```
+
 ## File uploads & downloads
 
 ### Uploads

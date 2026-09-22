@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Murdej\TsLinkPhp;
 
 use Closure;
+use Murdej\TsLinkPhp\Dto\ArgumentPreparerEvent;
+use Murdej\TsLinkPhp\Dto\MethodArgument;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Throwable;
@@ -88,8 +90,16 @@ class TsLink
                 }
             } else {
                 $arg = $methodArguments[$i] ?? null;
-                if (in_array('DateTime', $arg['types']) && !in_array('string', $arg['types']) && is_string($param)) {
-                    $param = new \DateTime($param);
+
+                if ($arg !== null) {
+                    $event = new ArgumentPreparerEvent($param, $arg);
+                    foreach ($this->argumentPreparers as $argumentPreparer) {
+                        $argumentPreparer($event);
+                        if (!$event->callNext) {
+                            break;
+                        }
+                    }
+                    $param = $event->value;
                 }
                 $pars[] = $param;
             }
@@ -162,6 +172,9 @@ class TsLink
         return $itemFiles;
     }
 
+    /**
+     * @return MethodArgument[]
+     */
     protected function getMethodArguments(object $service, string $methodName): array
     {
         $methodReflection = new \ReflectionMethod($service, $methodName);
@@ -169,9 +182,9 @@ class TsLink
         return array_map(
             function (ReflectionParameter $parameter) use ($methodReflection) {
                 $type = $parameter->getType();
-                return [
-                    'nullable' => $type?->allowsNull(),
-                    'types' => $type
+                return new MethodArgument(
+                    nullable: $type?->allowsNull(),
+                    types: $type
                         ? array_map(
                             fn($ref) => $ref->getName(),
                             $type instanceof ReflectionNamedType
@@ -179,7 +192,7 @@ class TsLink
                                 : $type->getTypes()
                         )
                         : [],
-                ];
+                );
             },
             $methodReflection->getParameters(),
         );
@@ -194,6 +207,37 @@ class TsLink
             $this->middlewares[$this->currentMiddleware - 1]->process($event);
         } else {
             $event->response->response = $this->service->{$event->request->methodName}(...$event->request->data);
+        }
+    }
+
+    /**
+     * @var array<callable(ArgumentPreparerEvent): void>
+     */
+    public array $argumentPreparers = [
+        [self::class, 'prepareDateTimeArgument'],
+    ];
+
+    /**
+     * @param callable(ArgumentPreparerEvent): void $argumentPreparer
+     */
+    public function addArgumentPreparer(callable $argumentPreparer): void
+    {
+        $this->argumentPreparers[] = $argumentPreparer;
+    }
+
+    protected static function prepareDateTimeArgument(ArgumentPreparerEvent $event): void
+    {
+        if (!is_string($event->value)) {
+            return;
+        }
+        $types = $event->argument->types;
+        if (in_array('string', $types)) {
+            return;
+        }
+        if (in_array('DateTime', $types)) {
+            $event->value = new \DateTime($event->value);
+        } elseif (in_array('DateTimeImmutable', $types)) {
+            $event->value = new \DateTimeImmutable($event->value);
         }
     }
 }

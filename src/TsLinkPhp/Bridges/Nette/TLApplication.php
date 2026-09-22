@@ -2,6 +2,7 @@
 
 namespace Murdej\TsLinkPhp\Bridges\Nette;
 
+use Murdej\TsLinkPhp\Dto\ArgumentPreparerEvent;
 use Murdej\TsLinkPhp\MiddlewareInterface;
 use Murdej\TsLinkPhp\TsLink;
 use Murdej\TsLinkPhp\TsCodeGenerator;
@@ -36,12 +37,24 @@ class TLApplication
 
     public array $middlewares = [];
 
+    /**
+     * @var array<callable(ArgumentPreparerEvent): void>
+     */
+    public array $argumentPreparers = [];
+
     public string $debugger = self::Debugger_Nette;
 
     public bool $sendException = true;
 
     public function addMiddleware(MiddlewareInterface $middleware) : void {
         $this->middlewares[] = $middleware;
+    }
+
+    /**
+     * @param callable(ArgumentPreparerEvent): void $argumentPreparer
+     */
+    public function addArgumentPreparer(callable $argumentPreparer): void {
+        $this->argumentPreparers[] = $argumentPreparer;
     }
 
     public const string Debugger_Nette = 'Nette';
@@ -98,6 +111,7 @@ class TLApplication
                 $tsl = new TsLink($cl);
                 $tsl->middlewares = $this->middlewares;
                 $tsl->sendException = $this->sendException;
+                array_push($tsl->argumentPreparers, ...$this->argumentPreparers);
                 if (str_starts_with(
                     $this->httpRequest->getHeader('Content-Type') ?? '',
                     'multipart/form-data'

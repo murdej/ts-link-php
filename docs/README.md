@@ -8,7 +8,7 @@ no manual fetch calls, no hand-written DTOs.
 - [Client methods & types](client-methods.md) — attributes that control what gets exposed and how types
   are translated to TypeScript
 - [Context, middleware, uploads & errors](advanced-features.md) — shared request context, middleware,
-  file upload/download, error handling
+  argument preparers, file upload/download, error handling
 - [Batch mode](batch-mode.md) — send several method calls in a single HTTP request
 - [Nette & Symfony integration](nette-bridge.md) — the ready-made HTTP endpoint and console command
 - [Code generation options](code-generation.md) — configuring `TsCodeGenerator`

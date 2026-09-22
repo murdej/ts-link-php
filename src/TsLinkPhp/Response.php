@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Murdej\TsLinkPhp;
 
 use Exception;
+use Throwable;
 use JsonSerializable;
 
 class Response implements JsonSerializable
@@ -15,7 +16,7 @@ class Response implements JsonSerializable
     public function __construct(
         public mixed $response = null,
         public ?array $context = null,
-        public Exception|null $exception = null,
+        public Exception|Throwable|null $exception = null,
     ) { }
 
 

@@ -76,6 +76,18 @@ Register middleware once on the application and it applies to every registered c
 $tlApplication->addMiddleware(new AuthMiddleware());
 ```
 
+### Argument preparers
+
+Register an [argument preparer](advanced-features.md#argument-preparers) once on the application and it
+applies to every registered class — `TLApplication` forwards it to the `TsLink` instance it builds for
+each request:
+
+```php
+use Murdej\TsLinkPhp\Bridges\PhpLibs\SmartDtoArgumentPreparer;
+
+$tlApplication->addArgumentPreparer(new SmartDtoArgumentPreparer());
+```
+
 ## Symfony console command
 
 `GenTlCommand` (`Murdej\TsLinkPhp\Bridges\Symfony\GenTlCommand`) is a `gen:ts-link` console command that

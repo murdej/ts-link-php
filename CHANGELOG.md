@@ -11,6 +11,22 @@
  - **TsLink**: File uploads inside a batch item are resolved per item via a new `extractBatchItemFiles()`,
    matching the `{id}_{localKey}` field naming used by the client
  - **Response**: Added `$batch` property; `jsonSerialize()` emits the `{"batch": [...]}` envelope when set
+ - **Response**: `$exception` property now also accepts `Throwable`, not just `Exception`
+ - **TsLink**: Added argument preparers (`$argumentPreparers`, `addArgumentPreparer()`) — pluggable
+   callbacks that transform an incoming argument before it reaches the method, replacing the previous
+   hardcoded `DateTime`-only conversion; the built-in preparer now also converts to `DateTimeImmutable`
+ - **TsLink**: Added `Dto\MethodArgument` (replaces the internal `['nullable' => ..., 'types' => ...]`
+   array previously returned by `getMethodArguments()`) and `Dto\ArgumentPreparerEvent`
+   (`value`/`argument`/`callNext`), used by argument preparers
+ - **Bridges\PhpLibs**: Added `SmartDtoArgumentPreparer` — converts an array argument into a
+   `murdej/php-libs` `Murdej\DTO\SmartDTO`-derived DTO based on the parameter's declared type
+ - **Bridges\Nette\TLApplication**: Added `$argumentPreparers`/`addArgumentPreparer()`, forwarded to
+   the per-request `TsLink` instance in `run()` — mirrors how `$middlewares` is already forwarded, and
+   is required for argument preparers (e.g. `SmartDtoArgumentPreparer`) to take effect when using the
+   Nette bridge
+ - **Bridges\Symfony**: Removed unused `App\Services\ItemFinder` import from `GenTlCommand`
+ - Added `nette/application`, `nette/http`, `tracy/tracy`, `symfony/console`, and `murdej/php-libs` to
+   `require-dev` — needed to develop/test the classes under `Bridges/`
  - **BaseCL**: Added client-side batch mode — `useBatch(callback?)`, `useBatchAuto(config)`, and `send()`
    queue/coalesce several method calls into a single HTTP request
  - Added a test suite (PHPUnit, `tests/`) and `.gitattributes` (`export-ignore` for `tests/`, `docs/`,

@@ -2,7 +2,6 @@
 
 namespace Murdej\TsLinkPhp\Bridges\Symfony;
 
-use App\Services\ItemFinder;
 use Murdej\TsLinkPhp\Bridges\Nette\TLApplication;
 use Murdej\TsLinkPhp\TsCodeGenerator;
 use Symfony\Component\Console\Attribute\AsCommand;
